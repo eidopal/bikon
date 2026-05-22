@@ -33,6 +33,38 @@ def choose_watermark_color(brightness: float) -> tuple:
     return (30, 30, 30, 180)
 
 
+def auto_enhance(
+    image_path: str,
+    brightness_factor: float = 1.15,
+    color_factor: float = 1.18,
+    sharpness_factor: float = 1.12,
+) -> str:
+    """自动优化图片：提亮 + 增加色彩饱和度 + 锐化。
+    返回原始图片路径（原地修改），不改变尺寸。
+    """
+    from PIL import Image, ImageEnhance
+
+    img = Image.open(image_path).convert("RGB")
+    original_width, original_height = img.size
+
+    brightness = sum(img.convert("L").getdata()) / (img.width * img.height)
+
+    if brightness < 100:
+        brightness_factor = min(brightness_factor * 1.3, 1.35)
+    elif brightness > 200:
+        brightness_factor = max(brightness_factor * 0.5, 1.0)
+
+    img = ImageEnhance.Brightness(img).enhance(brightness_factor)
+    img = ImageEnhance.Color(img).enhance(color_factor)
+    img = ImageEnhance.Sharpness(img).enhance(sharpness_factor)
+
+    if img.size != (original_width, original_height):
+        img = img.resize((original_width, original_height), Image.LANCZOS)
+
+    img.save(image_path, "JPEG", quality=92)
+    return image_path
+
+
 def apply_watermark(
     image_url: str,
     output_path: str,

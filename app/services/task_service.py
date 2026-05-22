@@ -95,7 +95,8 @@ async def process_task(task_id: str, payload: dict):
                         tmp.write(resp.content)
                         tmp_path = tmp.name
 
-                    from app.services.visual_engine import apply_watermark
+                    from app.services.visual_engine import auto_enhance, apply_watermark
+                    auto_enhance(tmp_path)
                     output_path = str(output_dir / f"{task_id}_{idx}.jpg")
                     watermarked_path = apply_watermark(tmp_path, output_path, watermark_text=watermark_text)
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from pydantic import BaseModel
@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.merchant import Merchant
 from app.models.brand_asset import BrandAsset
 from app.utils.storage import save_upload, delete_file
+from app.utils.response import success_response
 
 router = APIRouter()
 
@@ -40,15 +41,14 @@ async def register_merchant(
     await db.commit()
     await db.refresh(merchant)
 
-    return {
-        "code": 200,
-        "msg": "Merchant registered",
-        "data": {
+    return success_response(
+        data={
             "merchant_id": merchant.id,
             "name": merchant.name,
             "industry_context": merchant.industry_context,
         },
-    }
+        msg="Merchant registered",
+    )
 
 
 @router.put("/{merchant_id}/profile")
@@ -74,15 +74,14 @@ async def update_profile(
     await db.commit()
     await db.refresh(merchant)
 
-    return {
-        "code": 200,
-        "msg": "Profile updated",
-        "data": {
+    return success_response(
+        data={
             "merchant_id": merchant.id,
             "name": merchant.name,
             "industry_context": merchant.industry_context,
         },
-    }
+        msg="Profile updated",
+    )
 
 
 @router.post("/{merchant_id}/brand-asset")
@@ -117,17 +116,16 @@ async def upload_brand_asset(
     await db.commit()
     await db.refresh(asset)
 
-    return {
-        "code": 200,
-        "msg": "Brand asset uploaded",
-        "data": {
+    return success_response(
+        data={
             "asset_id": asset.id,
             "merchant_id": asset.merchant_id,
             "asset_type": asset.asset_type,
             "file_url": asset.file_url,
             "original_name": asset.original_name,
         },
-    }
+        msg="Brand asset uploaded",
+    )
 
 
 @router.get("/{merchant_id}/brand-assets")
@@ -148,10 +146,8 @@ async def list_brand_assets(
     result = await db.execute(stmt)
     assets = result.scalars().all()
 
-    return {
-        "code": 200,
-        "msg": "Success",
-        "data": [
+    return success_response(
+        data=[
             {
                 "asset_id": a.id,
                 "asset_type": a.asset_type,
@@ -161,7 +157,8 @@ async def list_brand_assets(
             }
             for a in assets
         ],
-    }
+        msg="Success",
+    )
 
 
 @router.delete("/{merchant_id}/brand-asset/{asset_id}")
@@ -189,7 +186,7 @@ async def delete_brand_asset(
     await db.delete(asset)
     await db.commit()
 
-    return {"code": 200, "msg": "Brand asset deleted"}
+    return success_response(msg="Brand asset deleted")
 
 
 @router.get("/{merchant_id}")
@@ -204,14 +201,13 @@ async def get_merchant(
     if not merchant:
         raise HTTPException(status_code=404, detail="Merchant not found")
 
-    return {
-        "code": 200,
-        "msg": "Success",
-        "data": {
+    return success_response(
+        data={
             "merchant_id": merchant.id,
             "name": merchant.name,
             "industry_context": merchant.industry_context,
             "brand_symbol": merchant.brand_symbol,
             "created_at": merchant.created_at.isoformat() if merchant.created_at else None,
         },
-    }
+        msg="Success",
+    )

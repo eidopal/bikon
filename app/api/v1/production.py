@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.services.task_service import submit_task, get_task_result
+from app.utils.response import success_response
 
 router = APIRouter()
 
@@ -17,7 +18,7 @@ async def submit_task_endpoint(
     db: AsyncSession = Depends(get_db),
 ):
     result = await submit_task(db, payload)
-    return {"code": 200, "msg": "Task accepted", "data": result}
+    return success_response(data=result, msg="Task accepted")
 
 
 @router.get("/task-result/{task_id}")
@@ -27,5 +28,5 @@ async def get_task_result_endpoint(
 ):
     result = await get_task_result(db, task_id)
     if result.get("task_status") == "NOT_FOUND":
-        return {"code": 404, "msg": "Task not found", "data": None}
-    return {"code": 200, "msg": "Success", "data": result}
+        return success_response(data=None, msg="Task not found", code=404)
+    return success_response(data=result, msg="Success")

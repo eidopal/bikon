@@ -5,20 +5,13 @@ from typing import Optional
 
 from app.database import get_db
 from app.services.wechat_service import code2session, msg_sec_check, img_sec_check
+from app.utils.response import success_response
 
 router = APIRouter()
 
 
 class Code2SessionRequest(BaseModel):
     code: str
-
-
-class WechatLoginResponse(BaseModel):
-    openid: Optional[str] = None
-    session_key: Optional[str] = None
-    unionid: Optional[str] = None
-    errcode: Optional[int] = None
-    errmsg: Optional[str] = None
 
 
 @router.post("/code2session")
@@ -32,15 +25,14 @@ async def wechat_login(payload: Code2SessionRequest):
             detail=f"微信登录失败: {result.get('errmsg', '未知错误')}"
         )
 
-    return {
-        "code": 200,
-        "msg": "Success",
-        "data": {
+    return success_response(
+        data={
             "openid": result.get("openid"),
             "session_key": result.get("session_key"),
             "unionid": result.get("unionid"),
         },
-    }
+        msg="Success",
+    )
 
 
 class TextSecCheckRequest(BaseModel):
@@ -51,12 +43,7 @@ class TextSecCheckRequest(BaseModel):
 async def wechat_msg_sec_check(payload: TextSecCheckRequest):
     """微信文本安全审查"""
     result = await msg_sec_check(payload.content)
-
-    return {
-        "code": 200,
-        "msg": "Success",
-        "data": result,
-    }
+    return success_response(data=result, msg="Success")
 
 
 class ImageSecCheckRequest(BaseModel):
@@ -72,8 +59,4 @@ async def wechat_img_sec_check(payload: ImageSecCheckRequest):
         resp.raise_for_status()
         result = await img_sec_check(resp.content)
 
-    return {
-        "code": 200,
-        "msg": "Success",
-        "data": result,
-    }
+    return success_response(data=result, msg="Success")

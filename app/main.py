@@ -1,11 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 
 from app.api.v1 import production, merchant, wechat
 from app.core.config import get_settings
 from app.database import init_db
+from app.utils.response import (
+    success_response,
+    validation_exception_handler,
+    http_exception_handler,
+    global_exception_handler,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,6 +37,19 @@ app.add_middleware(
 # 静态文件服务
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# 全局异常处理器
+@app.exception_handler(RequestValidationError)
+async def validation_handler(request, exc):
+    return await validation_exception_handler(request, exc)
+
+@app.exception_handler(StarletteHTTPException)
+async def http_handler(request, exc):
+    return await http_exception_handler(request, exc)
+
+@app.exception_handler(Exception)
+async def global_handler(request, exc):
+    return await global_exception_handler(request, exc)
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Initializing database...")
@@ -41,4 +62,4 @@ app.include_router(wechat.router, prefix="/api/v1/wechat", tags=["WeChat"])
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "bikon-api"}
+    return success_response(data={"service": "bikon-api"})

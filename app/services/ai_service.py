@@ -1,4 +1,5 @@
 import os
+import json
 import base64
 import httpx
 from dotenv import load_dotenv
@@ -106,8 +107,9 @@ async def generate_copywriting(
             messages=messages,
             max_tokens=800,
         )
-        import json
         content = response.choices[0].message.content.strip()
+        if not content:
+            raise ValueError("Empty response from model")
         # 提取 JSON（可能包含 markdown 代码块）
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()

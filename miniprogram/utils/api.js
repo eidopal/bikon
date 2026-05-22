@@ -1,6 +1,6 @@
 const store = require('./store.js')
 
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = 'http://192.168.0.59:8000'
 
 function request(method, path, data, options) {
   options = options || {}

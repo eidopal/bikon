@@ -6,7 +6,7 @@ App({
     userId: '',
     merchantId: '',
     userInfo: null,
-    baseUrl: 'http://localhost:8000'
+    baseUrl: 'http://192.168.0.59:8000'
   },
 
   onLaunch() {

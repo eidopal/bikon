@@ -16,7 +16,7 @@
   </view>
 
   <view class="empty-state" wx:if="{{!filteredTasks.length && !loading}}">
-    <view class="icon">&#xe6a0;</view>
+    <view class="icon">📋</view>
     <view>暂无任务</view>
   </view>
 

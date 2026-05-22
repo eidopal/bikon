@@ -42,7 +42,7 @@
   <!-- 失败 -->
   <view class="card" wx:if="{{!loading && taskStatus === 'FAILED'}}">
     <view class="empty-state">
-      <view class="icon">&#xe6a0;</view>
+      <view class="icon">✕</view>
       <view>任务处理失败</view>
       <view class="error-detail">{{errorMsg}}</view>
     </view>

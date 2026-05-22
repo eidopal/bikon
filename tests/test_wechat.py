@@ -32,8 +32,14 @@ def test_msg_sec_check(client):
 
 def test_img_sec_check(client):
     """测试图片安全审查"""
-    with patch("app.services.wechat_service.img_sec_check") as mock_check:
+    with patch("app.services.wechat_service.img_sec_check") as mock_check, \
+         patch("httpx.AsyncClient.get") as mock_get:
         mock_check.return_value = {"errcode": 0, "errmsg": "ok"}
+
+        mock_resp = MagicMock()
+        mock_resp.content = b"fake_image"
+        mock_resp.raise_for_status = MagicMock()
+        mock_get.return_value = mock_resp
 
         payload = {"image_url": "http://example.com/image.jpg"}
         resp = client.post("/api/v1/wechat/img-sec-check", json=payload)

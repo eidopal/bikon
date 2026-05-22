@@ -7,6 +7,7 @@ import logging
 
 from app.api.v1 import production, merchant, wechat
 from app.core.config import get_settings
+from app.core.logging_config import setup_logging, get_logger
 from app.database import init_db
 from app.utils.response import (
     success_response,
@@ -15,8 +16,8 @@ from app.utils.response import (
     global_exception_handler,
 )
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_logger(__name__)
 
 settings = get_settings()
 

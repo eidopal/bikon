@@ -6,6 +6,9 @@ load_dotenv()
 
 from openai import OpenAI
 from typing import List, Dict
+from app.core.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -46,7 +49,7 @@ async def transcribe_audio(audio_url: str) -> str:
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Audio transcription failed: {e}")
+        logger.error(f"Audio transcription failed: {e}", exc_info=True)
         return ""
 
 
@@ -68,7 +71,7 @@ async def generate_copywriting(
                 "image_url": {"url": img_b64},
             })
         except Exception as e:
-            print(f"Failed to load image {url}: {e}")
+            logger.error(f"Failed to load image {url}: {e}")
 
     # 构建提示词
     target_desc = []
@@ -112,7 +115,7 @@ async def generate_copywriting(
             content = content.split("```")[1].split("```")[0].strip()
         return json.loads(content)
     except Exception as e:
-        print(f"Copywriting generation failed: {e}")
+        logger.error(f"Copywriting generation failed: {e}", exc_info=True)
         # 返回默认文案
         return {
             "wechat_moments": {"text": f"今日服务已完成，欢迎咨询预约 - {merchant_context}"},

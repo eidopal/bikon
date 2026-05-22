@@ -6,7 +6,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.task import Task, TaskStatus
 from app.core.config import get_settings
+from app.core.logging_config import get_logger
 
+logger = get_logger(__name__)
 settings = get_settings()
 
 
@@ -88,7 +90,7 @@ async def process_task(task_id: str, payload: dict, engine):
                     # 清理临时文件
                     os.unlink(tmp_path)
                 except Exception as e:
-                    print(f"Failed to process image {url}: {e}")
+                    logger.error(f"Failed to process image {url}: {e}")
                     processed_images.append(url)  # 失败时返回原图
 
             result = {
@@ -105,8 +107,7 @@ async def process_task(task_id: str, payload: dict, engine):
             task.result = json.dumps(result)
             await db.commit()
         except Exception as e:
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Task {task_id} failed: {e}", exc_info=True)
             if task:
                 task.status = TaskStatus.FAILED
                 task.result = json.dumps({"error": str(e)})

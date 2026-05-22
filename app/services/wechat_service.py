@@ -2,8 +2,10 @@ import httpx
 import time
 import json
 from app.core.config import get_settings
+from app.core.logging_config import get_logger
 
 settings = get_settings()
+logger = get_logger(__name__)
 
 # 内存缓存 access_token
 _access_token_cache = {"token": None, "expires_at": 0}
@@ -26,6 +28,7 @@ async def get_access_token() -> str:
         data = resp.json()
 
     if "access_token" not in data:
+        logger.error(f"Failed to get access_token: {data}")
         raise Exception(f"Failed to get access_token: {data}")
 
     _access_token_cache["token"] = data["access_token"]
@@ -57,7 +60,7 @@ async def msg_sec_check(content: str) -> dict:
             resp = await client.post(url, json=payload)
             return resp.json()
     except Exception as e:
-        print(f"msg_sec_check failed: {e}")
+        logger.error(f"msg_sec_check failed: {e}", exc_info=True)
         return {"errcode": -1, "errmsg": str(e)}
 
 
@@ -71,5 +74,5 @@ async def img_sec_check(image_data: bytes) -> dict:
             resp = await client.post(url, files=files)
             return resp.json()
     except Exception as e:
-        print(f"img_sec_check failed: {e}")
+        logger.error(f"img_sec_check failed: {e}", exc_info=True)
         return {"errcode": -1, "errmsg": str(e)}

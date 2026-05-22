@@ -8,6 +8,9 @@ class BrandAsset(Base):
 
     id = Column(String(64), primary_key=True)
     merchant_id = Column(String(64), nullable=False)
-    logo_url = Column(String(512), nullable=True)
+    asset_type = Column(String(32), nullable=False, default="logo")  # logo, image, etc.
+    file_path = Column(String(512), nullable=True)
+    file_url = Column(String(512), nullable=True)
+    original_name = Column(String(256), nullable=True)
     watermark_config = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

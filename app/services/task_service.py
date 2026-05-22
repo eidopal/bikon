@@ -1,9 +1,13 @@
 import uuid
 import json
+import os
 from typing import Dict, Any, Optional
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.task import Task, TaskStatus
+from app.core.config import get_settings
+
+settings = get_settings()
 
 
 def generate_task_id() -> str:
@@ -30,6 +34,10 @@ async def submit_task(db: AsyncSession, payload: dict) -> dict:
 
 async def process_task(task_id: str, payload: dict, engine):
     from sqlalchemy.ext.asyncio import AsyncSession
+    from app.services.ai_service import generate_copywriting
+    from app.services.visual_engine import apply_watermark
+    from pathlib import Path
+
     async with AsyncSession(engine) as db:
         try:
             stmt = select(Task).where(Task.id == task_id)
@@ -43,13 +51,45 @@ async def process_task(task_id: str, payload: dict, engine):
 
             inputs = json.loads(task.inputs) if task.inputs else {}
             image_urls = inputs.get("images", [])
-
-            from app.services.ai_service import generate_copywriting
             merchant_context = payload.get("industry_context", "")
             targets = payload.get("copywriting_targets", ["wechat_moments", "xiaohongshu"])
+
+            # 生成文案
             copywriting = await generate_copywriting(image_urls, "", merchant_context, targets)
 
-            processed_images = image_urls[:9] if image_urls else []
+            # 处理图片水印
+            processed_images = []
+            watermark_text = payload.get("watermark_text", "BIKON")
+            output_dir = Path(settings.STORAGE_PATH) / "processed"
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            for idx, url in enumerate(image_urls[:9]):
+                try:
+                    # 下载图片
+                    import httpx
+                    async with httpx.AsyncClient() as client:
+                        resp = await client.get(url)
+                        resp.raise_for_status()
+
+                    # 保存临时文件
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                        tmp.write(resp.content)
+                        tmp_path = tmp.name
+
+                    # 应用水印
+                    output_path = str(output_dir / f"{task_id}_{idx}.jpg")
+                    watermarked_path = apply_watermark(tmp_path, output_path, watermark_text=watermark_text)
+
+                    # 构建访问 URL
+                    processed_url = f"{settings.BASE_URL}/static/uploads/processed/{task_id}_{idx}.jpg"
+                    processed_images.append(processed_url)
+
+                    # 清理临时文件
+                    os.unlink(tmp_path)
+                except Exception as e:
+                    print(f"Failed to process image {url}: {e}")
+                    processed_images.append(url)  # 失败时返回原图
 
             result = {
                 "task_status": "COMPLETED",

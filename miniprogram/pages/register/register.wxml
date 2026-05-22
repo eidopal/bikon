@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="header">
+    <view class="header-title">完善门店信息</view>
+    <view class="header-desc">AI 将根据您的业务特点生成个性化文案</view>
+  </view>
+
+  <view class="card">
+    <view class="form-group">
+      <text class="form-label">门店名称 *</text>
+      <input class="form-input" placeholder="例如：轻奢日式美发沙龙(静安店)" value="{{name}}" bindinput="onNameInput" maxlength="50"/>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">行业描述 *</text>
+      <textarea class="form-textarea" placeholder="描述您的服务内容、价位、风格、客户群体等，越详细AI生成越精准&#10;&#10;例如：上海静安区轻奢日式美发沙龙，客单价150-300元，主打日系烫染，25-40岁女性为主要客群" value="{{context}}" bindinput="onContextInput" maxlength="500"/>
+    </view>
+
+    <view class="form-group">
+      <text class="form-label">品牌标识（可选）</text>
+      <input class="form-input" placeholder="品牌Slogan或特色标签" value="{{brandSymbol}}" bindinput="onBrandInput" maxlength="50"/>
+    </view>
+  </view>
+
+  <view class="submit-area">
+    <button class="btn-primary" bindtap="handleRegister" loading="{{loading}}" disabled="{{loading}}">
+      完成注册
+    </button>
+  </view>
+</view>

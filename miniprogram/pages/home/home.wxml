@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="top-bar">
+    <view class="merchant-name">{{merchantName || 'BIKON 营销助手'}}</view>
+    <view class="settings-icon" bindtap="goSettings">&#xe6a0;</view>
+  </view>
+
+  <view class="stats-row">
+    <view class="stat-card">
+      <view class="stat-num">{{todayCount}}</view>
+      <view class="stat-label">今日任务</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-num">{{monthCount}}</view>
+      <view class="stat-label">本月任务</view>
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="btn-primary create-btn" bindtap="goCreate">+ 创建营销任务</button>
+  </view>
+
+  <view class="section" wx:if="{{recentTasks.length}}">
+    <view class="section-title">最近任务</view>
+    <view class="task-item" wx:for="{{recentTasks}}" wx:key="task_id" bindtap="goDetail" data-id="{{item.task_id}}">
+      <view class="task-info">
+        <view class="task-id">#{{item.task_id}}</view>
+        <view class="task-time">{{item.created_at}}</view>
+      </view>
+      <view class="tag tag-{{item.status}}">{{statusText[item.status]}}</view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{!recentTasks.length}}">
+    <view class="icon">&#xe6a0;</view>
+    <view>还没有任务，点击上方按钮开始</view>
+  </view>
+</view>

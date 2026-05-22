@@ -13,6 +13,17 @@ router = APIRouter()
 settings = get_settings()
 
 
+@router.post("/upload-image")
+async def upload_image_endpoint(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    """小程序端上传单张图片，返回 URL"""
+    from app.utils.storage import save_upload
+    file_info = await save_upload(file, subfolder="task-images")
+    return success_response(data={"url": file_info["url"]}, msg="Uploaded")
+
+
 @router.get("/ping")
 async def ping():
     return {"pong": True}

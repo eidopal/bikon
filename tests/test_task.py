@@ -60,6 +60,25 @@ def test_submit_with_files(client):
     assert len(data["data"]["uploaded_images"]) == 1
 
 
+def test_upload_image(client):
+    """测试单张图片上传"""
+    from io import BytesIO
+    from PIL import Image
+
+    fake_image = BytesIO()
+    Image.new("RGB", (10, 10), color="red").save(fake_image, format="JPEG")
+    fake_image.seek(0)
+
+    resp = client.post(
+        "/api/v1/production/upload-image",
+        files={"file": ("test.jpg", fake_image.read(), "image/jpeg")},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["code"] == 200
+    assert data["data"]["url"].startswith("http://")
+
+
 def test_list_tasks(client):
     """测试任务列表"""
     # 先提交一个任务

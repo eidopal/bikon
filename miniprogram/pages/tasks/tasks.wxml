@@ -1,0 +1,25 @@
+<view class="page">
+  <view class="tabs">
+    <view class="tab {{activeTab === 'all' ? 'active' : ''}}" bindtap="switchTab" data-tab="all">全部</view>
+    <view class="tab {{activeTab === 'completed' ? 'active' : ''}}" bindtap="switchTab" data-tab="completed">已完成</view>
+    <view class="tab {{activeTab === 'processing' ? 'active' : ''}}" bindtap="switchTab" data-tab="processing">进行中</view>
+  </view>
+
+  <view class="task-list" wx:if="{{filteredTasks.length}}">
+    <view class="task-card" wx:for="{{filteredTasks}}" wx:key="task_id" bindtap="goDetail" data-id="{{item.task_id}}">
+      <view class="task-header">
+        <view class="task-id">#{{item.task_id}}</view>
+        <view class="tag tag-{{item.status}}">{{statusText[item.status]}}</view>
+      </view>
+      <view class="task-time">{{item.created_at}}</view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{!filteredTasks.length && !loading}}">
+    <view class="icon">&#xe6a0;</view>
+    <view>暂无任务</view>
+  </view>
+
+  <view class="loading-more" wx:if="{{loading}}">加载中...</view>
+  <view class="loading-more" wx:if="{{!hasMore && filteredTasks.length > 0}}">— 没有更多了 —</view>
+</view>

@@ -1,0 +1,55 @@
+<view class="page">
+  <!-- 状态 -->
+  <view class="status-bar status-{{taskStatus}}">
+    <view class="status-text">{{statusText[taskStatus] || '加载中...'}}</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-area" wx:if="{{loading}}">
+    <view class="spinner"></view>
+    <view class="loading-text">AI 正在生成中，请稍候...</view>
+    <view class="loading-hint">预计需要 10-15 秒</view>
+  </view>
+
+  <!-- 结果内容 -->
+  <view wx:if="{{!loading && taskStatus === 'COMPLETED'}}">
+    <!-- 小红书文案 -->
+    <view class="card" wx:if="{{result.copywriting.xiaohongshu}}">
+      <view class="platform-label xhs">小红书</view>
+      <view class="copy-text">{{result.copywriting.xiaohongshu.text}}</view>
+      <view class="tags" wx:if="{{result.copywriting.xiaohongshu.tags}}">
+        <text class="hash-tag" wx:for="{{result.copywriting.xiaohongshu.tags}}" wx:key="*this">{{item}}</text>
+      </view>
+      <button class="btn-outline copy-btn" bindtap="copyText" data-text="{{result.copywriting.xiaohongshu.text}}">复制文案</button>
+    </view>
+
+    <!-- 朋友圈文案 -->
+    <view class="card" wx:if="{{result.copywriting.wechat_moments}}">
+      <view class="platform-label wechat">微信朋友圈</view>
+      <view class="copy-text">{{result.copywriting.wechat_moments.text}}</view>
+      <button class="btn-outline copy-btn" bindtap="copyText" data-text="{{result.copywriting.wechat_moments.text}}">复制文案</button>
+    </view>
+
+    <!-- 水印图片 -->
+    <view class="card" wx:if="{{result.visual_assets.processed_images.length}}">
+      <view class="form-label">生成的水印图片</view>
+      <view class="result-images">
+        <image class="result-img" wx:for="{{result.visual_assets.processed_images}}" wx:key="*this" src="{{item}}" mode="widthFix" bindtap="previewImage" data-url="{{item}}"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 失败 -->
+  <view class="card" wx:if="{{!loading && taskStatus === 'FAILED'}}">
+    <view class="empty-state">
+      <view class="icon">&#xe6a0;</view>
+      <view>任务处理失败</view>
+      <view class="error-detail">{{errorMsg}}</view>
+    </view>
+  </view>
+
+  <!-- 重新查询按钮（处理中状态） -->
+  <view class="retry-area" wx:if="{{!loading && (taskStatus === 'PROCESSING' || taskStatus === 'PENDING')}}">
+    <button class="btn-primary" bindtap="refresh">刷新状态</button>
+  </view>
+</view>

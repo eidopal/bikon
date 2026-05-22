@@ -77,14 +77,25 @@ async def process_task(task_id: str, payload: dict):
 
             inputs = json.loads(task.inputs) if task.inputs else {}
             image_urls = inputs.get("images", [])
+            audio_url = inputs.get("audio_url", "")
             merchant_context = payload.get("industry_context", "")
             targets = payload.get("copywriting_targets", ["wechat_moments", "xiaohongshu"])
+
+            # 音频转写
+            transcript = ""
+            if audio_url:
+                try:
+                    from app.services.ai_service import transcribe_audio
+                    transcript = await transcribe_audio(audio_url)
+                    logger.info(f"Audio transcribed: {len(transcript)} chars")
+                except Exception as e:
+                    logger.warning(f"Audio transcription failed: {e}")
 
             # 生成文案
             copywriting = {}
             try:
                 from app.services.ai_service import generate_copywriting
-                copywriting = await generate_copywriting(image_urls, "", merchant_context, targets)
+                copywriting = await generate_copywriting(image_urls, transcript, merchant_context, targets)
             except Exception as e:
                 logger.error(f"Copywriting generation failed: {e}", exc_info=True)
                 copywriting = {
@@ -112,9 +123,26 @@ async def process_task(task_id: str, payload: dict):
                         tmp_path = tmp.name
 
                     from app.services.visual_engine import auto_enhance, apply_watermark
+                    from app.services.ai_service import analyze_image_for_watermark
+
                     auto_enhance(tmp_path)
+
+                    analysis = await analyze_image_for_watermark(url)
+                    region_map = {
+                        "center": "bottom_right",
+                        "bottom": "top_left",
+                        "top": "bottom_right",
+                        "left": "bottom_right",
+                        "right": "bottom_left",
+                    }
+                    position = region_map.get(
+                        analysis.get("main_subject_region", "bottom"), "bottom_right"
+                    )
+
                     output_path = str(output_dir / f"{task_id}_{idx}.jpg")
-                    watermarked_path = apply_watermark(tmp_path, output_path, watermark_text=watermark_text)
+                    watermarked_path = apply_watermark(
+                        tmp_path, output_path, watermark_text=watermark_text, position=position
+                    )
 
                     processed_url = f"{settings.BASE_URL}/static/uploads/processed/{task_id}_{idx}.jpg"
                     processed_images.append(processed_url)

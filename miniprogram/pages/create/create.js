@@ -6,6 +6,7 @@ Page({
     images: [],
     targets: { wechat: true, xiaohongshu: true },
     watermarkText: '',
+    audioUrl: '',
     industryContext: '',
     submitting: false
   },
@@ -44,6 +45,10 @@ Page({
     this.setData({ watermarkText: e.detail.value })
   },
 
+  onAudioUrlInput: function (e) {
+    this.setData({ audioUrl: e.detail.value })
+  },
+
   onContextInput: function (e) {
     this.setData({ industryContext: e.detail.value })
   },
@@ -78,7 +83,7 @@ Page({
       api.submitTask({
         merchant_id: store.getMerchantId(),
         industry_context: that.data.industryContext || '',
-        inputs: { images: validUrls, audio_url: '' },
+        inputs: { images: validUrls, audio_url: that.data.audioUrl || '' },
         copywriting_targets: targetList,
         watermark_text: that.data.watermarkText || 'BIKON'
       }).then(function (res) {

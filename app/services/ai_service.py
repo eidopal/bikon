@@ -124,5 +124,37 @@ async def generate_copywriting(
 
 
 async def analyze_image_for_watermark(image_url: str) -> Dict:
-    """分析图片以确定水印位置（简化版）"""
-    return {"main_subject_region": "bottom", "brightness": "light"}
+    """分析图片主体区域，返回推荐水印位置"""
+    try:
+        img_bytes = await download_file(image_url)
+        img_b64 = encode_image_base64(img_bytes, "image/jpeg")
+
+        prompt = """分析这张图片：
+1. 主要拍摄主体（人脸/产品/物体）位于画面的哪个区域？
+   - 仅回复一个词：top（顶部）、bottom（底部）、left（左侧）、right（右侧）、center（中央）
+2. 画面整体是亮色调还是暗色调？
+   - 仅回复：light（明亮）或 dark（暗）
+
+仅回复 JSON，不要其他文字：
+{"main_subject_region": "<位置>", "brightness": "<light或dark>"}"""
+
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": img_b64}},
+                ],
+            }],
+            max_tokens=60,
+        )
+        content = response.choices[0].message.content.strip()
+        if "```" in content:
+            content = content.split("```")[0].strip()
+        result = json.loads(content)
+        logger.info(f"Watermark analysis: {result}")
+        return result
+    except Exception as e:
+        logger.warning(f"Watermark analysis failed, using default: {e}")
+        return {"main_subject_region": "bottom", "brightness": "light"}

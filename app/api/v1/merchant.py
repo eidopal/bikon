@@ -221,3 +221,70 @@ async def get_merchant(
         },
         msg="Success",
     )
+
+
+@router.get("/")
+async def list_merchants(
+    page: int = 1,
+    page_size: int = 20,
+    db: AsyncSession = Depends(get_db),
+):
+    """商户列表（分页）"""
+    from sqlalchemy import func as sql_func
+
+    stmt = (
+        select(Merchant)
+        .order_by(Merchant.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    result = await db.execute(stmt)
+    merchants = result.scalars().all()
+
+    count_stmt = select(sql_func.count(Merchant.id))
+    count_result = await db.execute(count_stmt)
+    total = count_result.scalar() or 0
+
+    return success_response(
+        data={
+            "merchants": [
+                {
+                    "merchant_id": m.id,
+                    "name": m.name,
+                    "industry_context": m.industry_context,
+                    "created_at": m.created_at.isoformat() if m.created_at else None,
+                }
+                for m in merchants
+            ],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        },
+        msg="Success",
+    )
+
+
+@router.delete("/{merchant_id}")
+async def delete_merchant(
+    merchant_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """删除商户及其关联数据"""
+    stmt = select(Merchant).where(Merchant.id == merchant_id)
+    result = await db.execute(stmt)
+    merchant = result.scalar_one_or_none()
+
+    if not merchant:
+        raise HTTPException(status_code=404, detail="Merchant not found")
+
+    # 清理关联数据
+    from app.models.task import Task
+    from app.models.brand_asset import BrandAsset
+
+    await db.execute(delete(BrandAsset).where(BrandAsset.merchant_id == merchant_id))
+    await db.execute(delete(Task).where(Task.merchant_id == merchant_id))
+    await db.delete(merchant)
+    await db.commit()
+
+    return success_response(msg="Merchant and associated data deleted")

@@ -41,6 +41,32 @@ def test_update_merchant_profile(client):
     assert data["data"]["name"] == "Updated Salon"
 
 
+def test_list_merchants(client):
+    """测试商户列表"""
+    resp = client.get("/api/v1/merchant/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["code"] == 200
+    assert "merchants" in data["data"]
+    assert "total" in data["data"]
+
+
+def test_delete_merchant(client):
+    """测试删除商户"""
+    # 先注册
+    payload = {"name": "To Delete", "industry_context": "Test"}
+    resp = client.post("/api/v1/merchant/register", json=payload)
+    merchant_id = resp.json()["data"]["merchant_id"]
+
+    # 删除
+    resp = client.delete(f"/api/v1/merchant/{merchant_id}")
+    assert resp.status_code == 200
+
+    # 确认已删除
+    resp = client.get(f"/api/v1/merchant/{merchant_id}")
+    assert resp.status_code == 404
+
+
 def test_list_brand_assets(client):
     """测试列出品牌资产"""
     # 先注册商户

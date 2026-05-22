@@ -36,6 +36,12 @@
              bindinput="onWatermarkInput" maxlength="20"/>
     </view>
 
+    <view class="form-group">
+      <text class="form-label">语音服务描述（选填）</text>
+      <input class="form-input" placeholder="录音文件的 URL 地址，AI 将提取服务关键词" value="{{audioUrl}}"
+             bindinput="onAudioUrlInput"/>
+    </view>
+
     <view class="form-group" style="margin-bottom:0">
       <text class="form-label">行业描述</text>
       <textarea class="form-textarea" placeholder="可留空，使用注册时填写的信息"

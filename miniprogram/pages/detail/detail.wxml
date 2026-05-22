@@ -34,7 +34,31 @@
     <view class="card" wx:if="{{result.visual_assets.processed_images.length}}">
       <view class="form-label">生成的水印图片</view>
       <view class="result-images">
-        <image class="result-img" wx:for="{{result.visual_assets.processed_images}}" wx:key="*this" src="{{item}}" mode="widthFix" bindtap="previewImage" data-url="{{item}}"></image>
+        <view class="img-item" wx:for="{{result.visual_assets.processed_images}}" wx:key="*this">
+          <image class="result-img" src="{{item}}" mode="widthFix" bindtap="previewImage" data-url="{{item}}"></image>
+          <view class="img-actions">
+            <button class="btn-sm" bindtap="saveImage" data-url="{{item}}">保存</button>
+            <button class="btn-sm btn-share" open-type="share">分享</button>
+          </view>
+        </view>
+      </view>
+      <button class="btn-primary save-all-btn" bindtap="saveAllImages">一键保存全部图片</button>
+    </view>
+
+    <!-- 发布引导 -->
+    <view class="card guide-card">
+      <view class="guide-title">&#9989; 内容已准备好，快速发布</view>
+      <view class="guide-steps">
+        <view class="guide-step" bindtap="copyAllAndGo" data-platform="wechat">
+          <view class="step-num">1</view>
+          <view class="step-text">复制朋友圈文案，打开微信发布</view>
+          <view class="step-arrow">&#8250;</view>
+        </view>
+        <view class="guide-step" bindtap="copyAllAndGo" data-platform="xhs">
+          <view class="step-num">2</view>
+          <view class="step-text">复制小红书文案，打开小红书发布</view>
+          <view class="step-arrow">&#8250;</view>
+        </view>
       </view>
     </view>
   </view>

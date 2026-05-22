@@ -112,6 +112,88 @@
   margin-top: 10rpx;
 }
 
+.img-item {
+  margin-bottom: 20rpx;
+}
+
+.img-actions {
+  display: flex;
+  margin-top: 10rpx;
+}
+
+.btn-sm {
+  flex: 1;
+  height: 56rpx;
+  line-height: 56rpx;
+  font-size: 24rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  text-align: center;
+  margin-right: 12rpx;
+  border: none;
+}
+
+.btn-share {
+  margin-right: 0;
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.save-all-btn {
+  width: 100%;
+  height: 72rpx;
+  line-height: 72rpx;
+  font-size: 26rpx;
+  margin-top: 16rpx;
+}
+
+.guide-card {
+  background: linear-gradient(135deg, #f8f9ff, #fff5f5);
+  border-left: 6rpx solid #e94560;
+}
+
+.guide-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.guide-step {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.guide-step:last-child {
+  border-bottom: none;
+}
+
+.step-num {
+  width: 40rpx;
+  height: 40rpx;
+  background: #e94560;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 22rpx;
+  text-align: center;
+  line-height: 40rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #333;
+}
+
+.step-arrow {
+  font-size: 32rpx;
+  color: #ccc;
+}
+
 .retry-area {
   padding: 40rpx 20rpx;
 }

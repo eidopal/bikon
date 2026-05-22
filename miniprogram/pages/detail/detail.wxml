@@ -1,79 +1,84 @@
-<view class="page">
-  <!-- 状态 -->
-  <view class="status-bar status-{{taskStatus}}">
-    <view class="status-text">{{statusText[taskStatus] || '加载中...'}}</view>
+<view class="page safe-bottom">
+  <!-- 状态栏 -->
+  <view class="status status-{{taskStatus}}">
+    <text class="status-text">{{statusText[taskStatus] || '加载中'}}</text>
   </view>
 
   <!-- 加载中 -->
-  <view class="loading-area" wx:if="{{loading}}">
+  <view class="loading-block" wx:if="{{loading}}">
     <view class="spinner"></view>
-    <view class="loading-text">AI 正在生成中，请稍候...</view>
+    <view class="loading-title">AI 正在生成中</view>
     <view class="loading-hint">预计需要 10-15 秒</view>
   </view>
 
-  <!-- 结果内容 -->
-  <view wx:if="{{!loading && taskStatus === 'COMPLETED'}}">
-    <!-- 小红书文案 -->
+  <!-- 完成结果 -->
+  <block wx:if="{{!loading && taskStatus === 'COMPLETED'}}">
+    <!-- 小红书 -->
     <view class="card" wx:if="{{result.copywriting.xiaohongshu}}">
-      <view class="platform-label xhs">小红书</view>
-      <view class="copy-text">{{result.copywriting.xiaohongshu.text}}</view>
-      <view class="tags" wx:if="{{result.copywriting.xiaohongshu.tags}}">
-        <text class="hash-tag" wx:for="{{result.copywriting.xiaohongshu.tags}}" wx:key="*this">{{item}}</text>
+      <view class="platform-label label-xhs">小红书</view>
+      <view class="copy-body">{{result.copywriting.xiaohongshu.text}}</view>
+      <view class="tags-row" wx:if="{{result.copywriting.xiaohongshu.tags}}">
+        <text class="hash" wx:for="{{result.copywriting.xiaohongshu.tags}}" wx:key="*this">{{item}}</text>
       </view>
-      <button class="btn-outline copy-btn" bindtap="copyText" data-text="{{result.copywriting.xiaohongshu.text}}">复制文案</button>
+      <button class="btn-sm" bindtap="copyText" data-text="{{result.copywriting.xiaohongshu.text}}">复制文案</button>
     </view>
 
-    <!-- 朋友圈文案 -->
+    <!-- 朋友圈 -->
     <view class="card" wx:if="{{result.copywriting.wechat_moments}}">
-      <view class="platform-label wechat">微信朋友圈</view>
-      <view class="copy-text">{{result.copywriting.wechat_moments.text}}</view>
-      <button class="btn-outline copy-btn" bindtap="copyText" data-text="{{result.copywriting.wechat_moments.text}}">复制文案</button>
+      <view class="platform-label label-wx">微信朋友圈</view>
+      <view class="copy-body">{{result.copywriting.wechat_moments.text}}</view>
+      <button class="btn-sm" bindtap="copyText" data-text="{{result.copywriting.wechat_moments.text}}">复制文案</button>
     </view>
 
     <!-- 水印图片 -->
     <view class="card" wx:if="{{result.visual_assets.processed_images.length}}">
-      <view class="form-label">生成的水印图片</view>
-      <view class="result-images">
-        <view class="img-item" wx:for="{{result.visual_assets.processed_images}}" wx:key="*this">
-          <image class="result-img" src="{{item}}" mode="widthFix" bindtap="previewImage" data-url="{{item}}"></image>
-          <view class="img-actions">
-            <button class="btn-sm" bindtap="saveImage" data-url="{{item}}">保存</button>
-            <button class="btn-sm btn-share" open-type="share">分享</button>
+      <text class="form-label">水印图片</text>
+      <view class="img-grid">
+        <view class="img-wrap" wx:for="{{result.visual_assets.processed_images}}" wx:key="*this">
+          <image class="img-thumb" src="{{item}}" mode="widthFix" bindtap="previewImage" data-url="{{item}}"/>
+          <view class="img-btns">
+            <button class="btn-sm save-btn" bindtap="saveImage" data-url="{{item}}">保存</button>
           </view>
         </view>
       </view>
-      <button class="btn-primary save-all-btn" bindtap="saveAllImages">一键保存全部图片</button>
+      <button class="btn btn-outline save-all" bindtap="saveAllImages" wx:if="{{result.visual_assets.processed_images.length > 1}}">
+        一键保存全部图片
+      </button>
     </view>
 
     <!-- 发布引导 -->
-    <view class="card guide-card">
-      <view class="guide-title">&#9989; 内容已准备好，快速发布</view>
-      <view class="guide-steps">
-        <view class="guide-step" bindtap="copyAllAndGo" data-platform="wechat">
-          <view class="step-num">1</view>
-          <view class="step-text">复制朋友圈文案，打开微信发布</view>
-          <view class="step-arrow">&#8250;</view>
+    <view class="card guide-box">
+      <view class="guide-label">快速发布</view>
+      <view class="guide-item" bindtap="copyAllAndGo" data-platform="wechat">
+        <view class="guide-num">1</view>
+        <view class="guide-content">
+          <view class="guide-title">朋友圈</view>
+          <view class="guide-desc">复制文案后去微信发布</view>
         </view>
-        <view class="guide-step" bindtap="copyAllAndGo" data-platform="xhs">
-          <view class="step-num">2</view>
-          <view class="step-text">复制小红书文案，打开小红书发布</view>
-          <view class="step-arrow">&#8250;</view>
+        <view class="guide-arrow">&#8250;</view>
+      </view>
+      <view class="guide-item" bindtap="copyAllAndGo" data-platform="xhs" style="border-bottom:none">
+        <view class="guide-num">2</view>
+        <view class="guide-content">
+          <view class="guide-title">小红书</view>
+          <view class="guide-desc">复制文案后去小红书发布</view>
         </view>
+        <view class="guide-arrow">&#8250;</view>
       </view>
     </view>
-  </view>
+  </block>
 
   <!-- 失败 -->
   <view class="card" wx:if="{{!loading && taskStatus === 'FAILED'}}">
-    <view class="empty-state">
-      <view class="icon">✕</view>
+    <view class="empty">
+      <view class="empty-icon">&#10060;</view>
       <view>任务处理失败</view>
-      <view class="error-detail">{{errorMsg}}</view>
+      <view class="caption" style="margin-top:8rpx">{{errorMsg}}</view>
     </view>
   </view>
 
-  <!-- 重新查询按钮（处理中状态） -->
-  <view class="retry-area" wx:if="{{!loading && (taskStatus === 'PROCESSING' || taskStatus === 'PENDING')}}">
-    <button class="btn-primary" bindtap="refresh">刷新状态</button>
+  <!-- 处理中刷新 -->
+  <view class="btn-wrap" wx:if="{{!loading && (taskStatus === 'PROCESSING' || taskStatus === 'PENDING')}}">
+    <button class="btn btn-primary" bindtap="refresh">刷新状态</button>
   </view>
 </view>

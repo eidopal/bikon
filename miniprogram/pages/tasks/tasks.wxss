@@ -1,54 +1,60 @@
 .page {
   min-height: 100vh;
-  background: #f5f5f5;
 }
 
 .tabs {
   display: flex;
-  background: #fff;
-  padding: 0 20rpx;
-  border-bottom: 1rpx solid #eee;
+  background: var(--white);
+  padding: 0 24rpx;
 }
 
 .tab {
   flex: 1;
   text-align: center;
-  padding: 24rpx 0;
+  padding: 28rpx 0;
   font-size: 28rpx;
-  color: #666;
+  color: var(--text-muted);
   border-bottom: 4rpx solid transparent;
+  transition: all 0.2s;
 }
 
 .tab.active {
-  color: #e94560;
-  border-bottom-color: #e94560;
-  font-weight: bold;
+  color: var(--red);
+  border-bottom-color: var(--red);
+  font-weight: 600;
 }
 
 .task-list {
-  padding: 20rpx;
+  padding: 24rpx;
 }
 
 .task-card {
-  background: #fff;
-  border-radius: 12rpx;
+  background: var(--white);
+  border-radius: 16rpx;
   padding: 24rpx;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
-.task-header {
+.task-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10rpx;
 }
 
-.task-id {
+.task-label {
   font-size: 28rpx;
-  color: #333;
+  font-weight: 500;
 }
 
-.task-time {
+.task-bottom {
   font-size: 22rpx;
-  color: #999;
+  color: var(--text-muted);
+}
+
+.more {
+  text-align: center;
+  padding: 30rpx;
+  font-size: 24rpx;
+  color: var(--text-muted);
 }

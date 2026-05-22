@@ -1,4 +1,8 @@
-<view class="page">
+<view class="page safe-bottom">
+  <view class="page-header">
+    <view class="title">门店设置</view>
+  </view>
+
   <view class="card">
     <view class="form-group">
       <text class="form-label">门店名称</text>
@@ -8,28 +12,32 @@
       <text class="form-label">行业描述</text>
       <textarea class="form-textarea" value="{{industryContext}}" bindinput="onContextInput" maxlength="300"/>
     </view>
-    <view class="form-group">
+    <view class="form-group" style="margin-bottom:0">
       <text class="form-label">品牌标识</text>
       <input class="form-input" value="{{brandSymbol}}" bindinput="onBrandInput" maxlength="50"/>
     </view>
-    <button class="btn-primary" bindtap="handleSave" loading="{{saving}}" disabled="{{saving}}">保存修改</button>
+  </view>
+
+  <view class="btn-wrap">
+    <button class="btn btn-primary" bindtap="handleSave"
+            loading="{{saving}}" disabled="{{saving}}">保存修改</button>
   </view>
 
   <view class="card" wx:if="{{merchantId}}">
-    <view class="form-label">品牌资产管理</view>
+    <text class="form-label">品牌素材</text>
     <view class="asset-list" wx:if="{{assets.length}}">
       <view class="asset-item" wx:for="{{assets}}" wx:key="asset_id">
-        <image class="asset-img" src="{{item.file_url}}" mode="aspectFill"></image>
+        <image class="asset-img" src="{{item.file_url}}" mode="aspectFill"/>
         <view class="asset-info">
-          <view>{{item.asset_type}}</view>
-          <view class="asset-name">{{item.original_name}}</view>
+          <view>{{item.asset_type === 'logo' ? 'Logo' : item.asset_type}}</view>
+          <view class="caption">{{item.original_name}}</view>
         </view>
       </view>
     </view>
-    <button class="btn-outline" bindtap="uploadAsset">上传品牌素材</button>
+    <button class="btn btn-outline" bindtap="uploadAsset" wx:if="{{assets.length < 5}}">上传素材</button>
   </view>
 
   <view class="card">
-    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+    <button class="btn btn-ghost logout-btn" bindtap="handleLogout">退出登录</button>
   </view>
 </view>

@@ -1,28 +1,30 @@
 <view class="login-page">
-  <view class="brand">
-    <view class="brand-icon">B</view>
-    <view class="brand-name">BIKON</view>
-    <view class="brand-desc">AI 驱动的营销内容生产线</view>
+  <view class="logo-area">
+    <view class="logo">B</view>
+    <view class="app-name">BIKON</view>
+    <view class="app-desc">AI 驱动的营销内容生产线</view>
   </view>
 
   <view class="features">
-    <view class="feature-item">
-      <view class="feature-icon"></view>
+    <view class="feat-item">
+      <view class="feat-dot"></view>
       <text>上传服务照片，自动生成精美水印图</text>
     </view>
-    <view class="feature-item">
-      <view class="feature-icon"></view>
-      <text>智能生成朋友圈+小红书多平台文案</text>
+    <view class="feat-item">
+      <view class="feat-dot"></view>
+      <text>智能生成朋友圈 + 小红书多平台文案</text>
     </view>
-    <view class="feature-item">
-      <view class="feature-icon"></view>
-      <text>一键复制发布，省时省力</text>
+    <view class="feat-item">
+      <view class="feat-dot"></view>
+      <text>一键保存图片，快速发布获客</text>
     </view>
   </view>
 
-  <button class="login-btn" bindtap="handleLogin" loading="{{loading}}" disabled="{{loading}}">
-    微信一键登录
-  </button>
-
-  <view class="note">登录即表示同意《用户服务协议》</view>
+  <view class="btn-area">
+    <button class="btn btn-primary login-btn" bindtap="handleLogin"
+            loading="{{loading}}" disabled="{{loading}}">
+      微信一键登录
+    </button>
+    <view class="agreement">登录即表示同意《用户服务协议》</view>
+  </view>
 </view>

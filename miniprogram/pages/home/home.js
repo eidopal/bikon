@@ -1,5 +1,5 @@
-const api = require('../../utils/api')
-const store = require('../../utils/store')
+var api = require('../../utils/api')
+var store = require('../../utils/store')
 
 Page({
   data: {
@@ -7,6 +7,7 @@ Page({
     todayCount: 0,
     monthCount: 0,
     recentTasks: [],
+    loading: true,
     statusText: {
       pending: '等待中',
       processing: '处理中',
@@ -16,50 +17,42 @@ Page({
   },
 
   onShow: function () {
+    var that = this
     var merchantId = store.getMerchantId()
-    this.setData({ merchantName: store.getMerchantName() })
+    that.setData({ merchantName: store.getMerchantName(), loading: true })
 
-    if (!merchantId) return
+    if (!merchantId) {
+      that.setData({ loading: false })
+      return
+    }
 
-    api.listTasks({ merchant_id: merchantId, page: 1, page_size: 3 })
-      .then(function (res) {
-        if (res.code === 200 && res.data) {
-          this.setData({
-            recentTasks: res.data.tasks || [],
-            monthCount: res.data.total || 0
-          })
-        }
-      }.bind(this))
-      .catch(function () {})
+    api.listTasks({ merchant_id: merchantId, page: 1, page_size: 20 }).then(function (res) {
+      if (res.code === 200 && res.data) {
+        var tasks = res.data.tasks || []
+        that.setData({
+          recentTasks: tasks.slice(0, 3),
+          monthCount: res.data.total || 0,
+          loading: false
+        })
+      } else {
+        that.setData({ loading: false })
+      }
+    }).catch(function () {
+      that.setData({ loading: false })
+    })
 
-    api.listTasks({ merchant_id: merchantId, page: 1, page_size: 20 })
-      .then(function (res) {
-        if (res.code === 200 && res.data) {
-          this.setData({ monthCount: res.data.total || 0 })
-        }
-      }.bind(this))
-      .catch(function () {})
-
-    api.getMerchant(merchantId)
-      .then(function (res) {
-        if (res.code === 200 && res.data) {
-          store.setMerchantName(res.data.name)
-          this.setData({ merchantName: res.data.name })
-        }
-      }.bind(this))
-      .catch(function () {})
+    api.getMerchant(merchantId).then(function (res) {
+      if (res.code === 200 && res.data) {
+        store.setMerchantName(res.data.name)
+        that.setData({ merchantName: res.data.name })
+      }
+    })
   },
 
-  goCreate: function () {
-    wx.navigateTo({ url: '/pages/create/create' })
-  },
-
+  goCreate: function () { wx.navigateTo({ url: '/pages/create/create' }) },
   goDetail: function (e) {
-    var id = e.currentTarget.dataset.id
-    wx.navigateTo({ url: '/pages/detail/detail?task_id=' + id })
+    wx.navigateTo({ url: '/pages/detail/detail?task_id=' + e.currentTarget.dataset.id })
   },
-
-  goSettings: function () {
-    wx.navigateTo({ url: '/pages/settings/settings' })
-  }
+  goTasks: function () { wx.switchTab({ url: '/pages/tasks/tasks' }) },
+  goSettings: function () { wx.navigateTo({ url: '/pages/settings/settings' }) }
 })

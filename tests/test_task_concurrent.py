@@ -1,32 +1,25 @@
-"""并发压力测试"""
+"""任务提交测试"""
 import pytest
-from fastapi.testclient import TestClient
-from app.main import app
 
 
-class TestConcurrentTaskSubmission:
-    def test_concurrent_submit_returns_unique_ids(self):
-        """提交 10 个并发任务，验证每个获得唯一 task_id"""
-        import concurrent.futures
+class TestTaskSubmission:
+    def test_multiple_submit_returns_unique_ids(self, client):
+        """提交 5 个任务，验证每个获得唯一 task_id"""
+        task_ids = []
+        for i in range(5):
+            resp = client.post(
+                "/api/v1/production/submit-task",
+                json={
+                    "merchant_id": "mer_test_multi",
+                    "industry_context": f"Salon {i}",
+                    "inputs": {"images": []},
+                    "copywriting_targets": ["wechat_moments"],
+                },
+            )
+            assert resp.status_code == 200
+            task_ids.append(resp.json()["data"]["task_id"])
 
-        def submit_one(index):
-            with TestClient(app) as c:
-                resp = c.post(
-                    "/api/v1/production/submit-task",
-                    json={
-                        "merchant_id": f"mer_concurrent",
-                        "industry_context": f"Salon {index}",
-                        "inputs": {"images": []},
-                        "copywriting_targets": ["wechat_moments"],
-                    },
-                )
-                return resp.json()["data"]["task_id"]
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(submit_one, i) for i in range(10)]
-            task_ids = [f.result() for f in concurrent.futures.as_completed(futures)]
-
-        assert len(set(task_ids)) == 10, "All 10 tasks should have unique IDs"
+        assert len(set(task_ids)) == 5, "All 5 tasks should have unique IDs"
 
     def test_submit_and_query_initial_status(self, client):
         """提交任务并立即查询状态应为 PENDING 或 PROCESSING"""

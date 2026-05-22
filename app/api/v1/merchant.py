@@ -7,6 +7,8 @@ from typing import Optional, List
 from app.database import get_db
 from app.models.merchant import Merchant
 from app.models.brand_asset import BrandAsset
+from app.models.user import User
+from app.core.auth import get_current_user
 from app.utils.storage import save_upload, delete_file
 from app.utils.response import success_response
 
@@ -29,6 +31,7 @@ class MerchantProfileUpdate(BaseModel):
 async def register_merchant(
     payload: MerchantRegisterRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     import uuid
     merchant = Merchant(
@@ -38,6 +41,9 @@ async def register_merchant(
         brand_symbol=payload.brand_symbol,
     )
     db.add(merchant)
+    await db.flush()
+
+    current_user.merchant_id = merchant.id
     await db.commit()
     await db.refresh(merchant)
 
@@ -46,6 +52,7 @@ async def register_merchant(
             "merchant_id": merchant.id,
             "name": merchant.name,
             "industry_context": merchant.industry_context,
+            "user_id": current_user.id,
         },
         msg="Merchant registered",
     )
@@ -56,6 +63,7 @@ async def update_profile(
     merchant_id: str,
     payload: MerchantProfileUpdate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     stmt = select(Merchant).where(Merchant.id == merchant_id)
     result = await db.execute(stmt)
@@ -90,6 +98,7 @@ async def upload_brand_asset(
     file: UploadFile = File(...),
     asset_type: str = "logo",
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # 验证 merchant 存在
     stmt = select(Merchant).where(Merchant.id == merchant_id)
@@ -132,6 +141,7 @@ async def upload_brand_asset(
 async def list_brand_assets(
     merchant_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     # 验证 merchant 存在
     stmt = select(Merchant).where(Merchant.id == merchant_id)

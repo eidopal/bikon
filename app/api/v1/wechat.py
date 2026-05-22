@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import func
 from pydantic import BaseModel
 from typing import Optional
 
@@ -15,21 +16,54 @@ class Code2SessionRequest(BaseModel):
 
 
 @router.post("/code2session")
-async def wechat_login(payload: Code2SessionRequest):
+async def wechat_login(
+    payload: Code2SessionRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """微信小程序登录"""
     result = await code2session(payload.code)
 
-    if result.get("errcode"):
+    errocde = result.get("errcode")
+    if errocde and errocde != 0:
         raise HTTPException(
             status_code=400,
             detail=f"微信登录失败: {result.get('errmsg', '未知错误')}"
         )
 
+    openid = result.get("openid")
+    if not openid:
+        raise HTTPException(status_code=400, detail="微信登录失败: 未获取到 openid")
+
+    from app.models.user import User
+    from app.core.auth import create_access_token
+    from sqlalchemy import select
+    import uuid
+
+    stmt = select(User).where(User.openid == openid)
+    query_result = await db.execute(stmt)
+    user = query_result.scalar_one_or_none()
+
+    if user is None:
+        user = User(
+            id=f"user_{uuid.uuid4().hex[:10]}",
+            openid=openid,
+            unionid=result.get("unionid"),
+        )
+        db.add(user)
+
+    user.last_login_at = func.now()
+    await db.commit()
+    await db.refresh(user)
+
+    token = create_access_token(user.id, user.openid)
+
     return success_response(
         data={
-            "openid": result.get("openid"),
-            "session_key": result.get("session_key"),
+            "token": token,
+            "user_id": user.id,
+            "openid": user.openid,
             "unionid": result.get("unionid"),
+            "merchant_id": user.merchant_id,
         },
         msg="Success",
     )

@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./bikon.db
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_PATH=./static/uploads
+    volumes:
+      - ./static/uploads:/app/static/uploads
+      - ./bikon.db:/app/bikon.db
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

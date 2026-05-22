@@ -16,6 +16,20 @@ def generate_task_id() -> str:
     return f"task_{uuid.uuid4().hex[:10]}"
 
 
+async def enqueue_task(task_id: str, payload: dict) -> bool:
+    """将任务入队到 ARQ；不可用时返回 False"""
+    try:
+        from app.core.queue import redis as pool
+        if pool is None:
+            return False
+        await pool.enqueue_job("process_task", task_id, payload)
+        logger.info(f"Task {task_id} enqueued to ARQ")
+        return True
+    except Exception as e:
+        logger.warning(f"ARQ enqueue failed, using fallback: {e}")
+        return False
+
+
 async def submit_task(db, payload: dict) -> dict:
     task_id = generate_task_id()
     task = Task(
@@ -28,9 +42,11 @@ async def submit_task(db, payload: dict) -> dict:
     await db.commit()
     await db.refresh(task)
 
-    # 启动后台处理任务
     import asyncio
-    asyncio.create_task(process_task(task_id, payload))
+    enqueued = await enqueue_task(task_id, payload)
+    if not enqueued:
+        logger.info(f"Starting background task {task_id} via asyncio fallback")
+        asyncio.create_task(process_task(task_id, payload))
 
     return {"task_id": task_id, "estimated_wait_ms": 8500}
 
